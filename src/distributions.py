@@ -373,11 +373,21 @@ def nct_cdf(t: float, df: float, ncp: float, method: str = "auto") -> float:
         raise ValueError(f"nct_cdf needs df > 0, got {df}")
     if method == "quadrature":
         return _nct_cdf_quadrature(t, df, ncp)
-    if method == "auto":
+    if method == "auto" and abs(ncp) > 12.0:
         # AS 243 sums about ncp^2/2 Poisson terms and loses digits once that count
         # grows large, so hand those cases to the quadrature.
-        if abs(ncp) > 12.0:
-            return _nct_cdf_quadrature(t, df, ncp)
-    if t >= 0.0:
-        return _nct_cdf_series(t, df, ncp)
-    return 1.0 - _nct_cdf_series(-t, df, -ncp)
+        return _nct_cdf_quadrature(t, df, ncp)
+
+    value = _nct_cdf_series(t, df, ncp) if t >= 0.0 else 1.0 - _nct_cdf_series(-t, df, -ncp)
+
+    if method == "auto" and value < 1e-8:
+        # The series builds a small answer by subtracting terms of order one, so its
+        # ABSOLUTE error stays near 1e-14 while its relative error grows without
+        # bound as the answer shrinks. Measured against the quadrature at
+        # t = 5, df = 1000, ncp = 11 the series is wrong in the fourth significant
+        # figure of a probability of 1.2e-9. The quadrature has no such cancellation
+        # and the Python and JavaScript quadratures agree there to 1e-15 relative, so
+        # below 1e-8 the quadrature answers. Nothing in a power calculation turns on
+        # this region; the switch exists so the two ports do not disagree.
+        return _nct_cdf_quadrature(t, df, ncp)
+    return value
