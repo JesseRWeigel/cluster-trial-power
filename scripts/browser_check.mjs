@@ -406,7 +406,24 @@ try {
     `body ${narrowOverflow.bodyOverflowX}, html ${narrowOverflow.htmlOverflowX}`);
 } finally {
   await chrome.stop();
-  await rm(profileDir, { recursive: true, force: true });
+  // Chrome keeps flushing its profile for a moment after the process exits, so a
+  // recursive remove straight after SIGTERM loses a race with it and throws
+  // ENOTEMPTY. That happened once here and failed a run in which every assertion
+  // had passed. Cleaning up a temporary directory is not part of the verdict, so it
+  // retries and then reports rather than throwing.
+  let removed = false;
+  for (let attempt = 0; attempt < 5 && !removed; attempt += 1) {
+    try {
+      await rm(profileDir, { recursive: true, force: true });
+      removed = true;
+    } catch {
+      await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
+    }
+  }
+  if (!removed) {
+    console.log(`note: could not remove the temporary chrome profile, left it behind. `
+      + "This does not affect any assertion above.");
+  }
 }
 
 console.log();

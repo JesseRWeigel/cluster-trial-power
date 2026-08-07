@@ -151,19 +151,21 @@ def main() -> int:
         )
 
     hits = []
-    scanned_bytes = 0
     for name in files:
         path = os.path.join(ROOT, name)
         if not os.path.isfile(path):
             continue
         with open(path, "rb") as fh:
             blob = fh.read()
-        scanned_bytes += len(blob)
         suffix = os.path.splitext(name)[1]
         hits.extend(scan_bytes(name, blob, rules, suffix in TEXT_SUFFIXES))
 
-    print(f"scanned {len(files)} tracked files, {scanned_bytes} bytes, "
-          f"{len(rules)} patterns")
+    # Deliberately no byte or line total. This line is pasted into the README's
+    # Status section, and any total that includes the README changes the moment the
+    # transcript is pasted back into it, so the pasted output could never match a
+    # later run. That the scanner really reads what it opens is established by the
+    # positive control above, not by a volume number here.
+    print(f"scanned {len(files)} tracked files against {len(rules)} patterns")
     if hits:
         print(f"PRIVACY SCAN FAILED: {len(hits)} findings")
         for name, lineno, rule_name, detail in hits:

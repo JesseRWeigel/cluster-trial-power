@@ -41,7 +41,7 @@ Two analyses, matching the two models the calculator offers:
 
 Every result is reported with its Monte Carlo standard error, and the discrepancy is
 reported in units of that error. A run passes when every scenario is within 4
-standard errors, which for the seven scenarios here is a false alarm rate of about
+standard errors, which for the eight scenarios here is a false alarm rate of about
 0.02 percent if the calculator is right.
 """
 
@@ -285,7 +285,10 @@ def main() -> int:
 
     imported = assert_no_package_imports(os.path.abspath(__file__))
     print(f"import graph checked with ast: {', '.join(imported)}")
-    print(f"nothing from src/ is imported; the calculator is run as a subprocess ({CLI})")
+    # Relative, deliberately: this output gets pasted into the README, and an
+    # absolute /home/<user>/... path there is both private and unportable.
+    print("nothing from src/ is imported; the calculator is run as a subprocess "
+          f"({os.path.relpath(CLI, ROOT)})")
     print()
 
     failures = []

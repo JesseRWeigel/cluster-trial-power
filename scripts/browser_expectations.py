@@ -64,9 +64,12 @@ def main() -> int:
     }
     with open(sys.argv[1], "w") as fh:
         json.dump(payload, fh, indent=1)
-    print(f"wrote browser expectations to {sys.argv[1]}: "
+    # The file name is a temporary path and is deliberately not printed: this output
+    # gets pasted into the README, where an absolute path is both noise and a leak.
+    print(f"browser expectations from the python engine: "
           f"{payload['clusters_per_arm']} clusters per arm, "
-          f"design effect {payload['design_effect']}")
+          f"design effect {payload['design_effect']}, "
+          f"{payload['reference_rows']} reference rows to render")
     return 0
 
 
