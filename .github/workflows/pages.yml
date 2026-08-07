@@ -1,0 +1,41 @@
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Deliberately NOT `group: pages`. That name is a shared lock, and one wedged run
+# holds it while every later deploy queues behind it, sometimes uncancellably. Keying
+# the group to the run id means a stuck run blocks only itself.
+concurrency:
+  group: pages-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild the page and fail if the committed one has drifted
+        run: |
+          python3 scripts/build_page.py /tmp/index.html
+          diff -u docs/index.html /tmp/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
