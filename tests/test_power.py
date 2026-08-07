@@ -231,9 +231,13 @@ class TestIndividualPower(unittest.TestCase):
         )
 
     def test_rejects_bad_input(self):
-        with self.assertRaises(ValueError):
+        # The message matters, not only the exception type. With the zero effect check
+        # removed the solver still raises ValueError, from its bracket rather than
+        # from the guard, so a bare assertRaises here passes on a broken guard. A
+        # sabotage run found exactly that.
+        with self.assertRaisesRegex(ValueError, "effect size of zero"):
             P.n_two_sample(0.0)
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, "power must lie"):
             P.n_two_sample(0.5, power=1.0)
         with self.assertRaises(ValueError):
             P.power_two_sample(0.5, 30, alpha=0.0)
