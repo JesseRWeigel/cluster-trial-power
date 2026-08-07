@@ -197,13 +197,30 @@ def betainc(a: float, b: float, x: float) -> float:
 
 
 def t_cdf(t: float, df: float) -> float:
-    """Student t CDF."""
+    """Student t CDF.
+
+    Two branches, because one expression cannot hold precision at both ends.
+
+    For |t| >= sqrt(df) the tail is computed directly as I_x(df/2, 1/2) with
+    x = df / (df + t^2), which keeps full relative precision on a small tail.
+
+    For |t| < sqrt(df) that form fails: x saturates to exactly 1.0 in double
+    precision once t^2 is small against df, so the CDF returns a flat 0.5 over an
+    interval of width about 1e-8 sqrt(df) around zero. A quantile search then
+    converges to the edge of that plateau rather than to the root. The fix is the
+    complementary form, 1/2 + 1/2 I_y(1/2, df/2) with y = t^2 / (t^2 + df), where y
+    stays representable however small t is. Both branches meet at |t| = sqrt(df),
+    where the CDF is around 0.8 and neither form is near a cancellation.
+    """
     if df <= 0:
         raise ValueError(f"t_cdf needs df > 0, got {df}")
     if t == 0.0:
         return 0.5
-    x = df / (df + t * t)
-    tail = 0.5 * betainc(0.5 * df, 0.5, x)
+    tt = t * t
+    if tt < df:
+        half = 0.5 * betainc(0.5, 0.5 * df, tt / (tt + df))
+        return 0.5 + half if t > 0 else 0.5 - half
+    tail = 0.5 * betainc(0.5 * df, 0.5, df / (df + tt))
     return 1.0 - tail if t > 0 else tail
 
 
