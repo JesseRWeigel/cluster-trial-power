@@ -5,6 +5,10 @@ expect, the average cluster size and the intracluster correlation, and get back 
 number of clusters and the number of individuals you need, with the power curve and
 the operating characteristic drawn.
 
+> Measurements described here were taken on one development machine: an RTX 5090 with
+> 32 GB of VRAM, 12 cores, 48 GB of RAM, running Linux under WSL2. Numbers from your own
+> hardware will differ.
+
 Catalog task: `EDU-039`. One of a public catalog of build ideas:
 https://github.com/JesseRWeigel/722-things-to-build
 
@@ -107,7 +111,7 @@ means has a different one.
 ## Validation, and what it does and does not establish
 
 The task's done condition is agreement with `pwr` and `clusterPower`. **R is not
-installed on the machine this was built on.** `which R` and `which Rscript` both
+installed on the development machine.** `which R` and `which Rscript` both
 return nothing, and no number here was produced by running R. Saying so plainly
 matters more than the alternative, which would be to write down numbers that look
 like R output.
