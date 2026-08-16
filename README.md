@@ -5,6 +5,8 @@ expect, the average cluster size and the intracluster correlation, and get back 
 number of clusters and the number of individuals you need, with the power curve and
 the operating characteristic drawn.
 
+**[Run the calculator, with the power curves →](https://jesserweigel.github.io/cluster-trial-power/)**
+
 > Measurements described here were taken on one development machine: an RTX 5090 with
 > 32 GB of VRAM, 12 cores, 48 GB of RAM, running Linux under WSL2. Numbers from your own
 > hardware will differ.
